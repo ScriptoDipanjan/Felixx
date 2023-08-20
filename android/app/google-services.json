@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1018406556229",
+    "project_id": "felixx-b52b5",
+    "storage_bucket": "felixx-b52b5.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1018406556229:android:5a7d497628bba5dea6892c",
+        "android_client_info": {
+          "package_name": "com.scripto.felixx"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1018406556229-iudg6hpdc7hv99gs0tmhuhp993jcaadr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.scripto.felixx",
+            "certificate_hash": "84005d5d0e3208c2060b20487ab28c4b9cf82283"
+          }
+        },
+        {
+          "client_id": "1018406556229-h07aq90o5sf21d8t5mij8etti4e0dkfi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDSI_PBjuETa_HMetGpM-MKGIqMvNtROYc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1018406556229-h07aq90o5sf21d8t5mij8etti4e0dkfi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
