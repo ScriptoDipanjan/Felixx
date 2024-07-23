@@ -1,12 +1,9 @@
-import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:felixx/api/api_calls.dart';
 import 'package:felixx/constants/dimens.dart' as dimensions;
 import 'package:felixx/utils/methods.dart';
 import 'package:flutter/material.dart';
-import 'package:photo_view/photo_view.dart';
-import 'package:photo_view/photo_view_gallery.dart';
 
 import '../constants/colors.dart';
 import '../constants/strings.dart';
@@ -14,7 +11,7 @@ import '../utils/routes.dart';
 
 class AlbumView extends StatefulWidget{
   final String bannerImage, albumID;
-  const AlbumView(this.bannerImage, this.albumID, {Key? key}) : super(key: key);
+  const AlbumView(this.bannerImage, this.albumID, {super.key});
 
   @override
   State<AlbumView> createState() => _AlbumViewState();
@@ -26,8 +23,8 @@ class _AlbumViewState extends State<AlbumView> with TickerProviderStateMixin {
   bool isLoading = true;
   int currentIndex = 0;
   late PageController pageController;
-  late Animation animation;
-  late AnimationController controllerFront;
+  late Animation animationFront, animationBack;
+  late AnimationController controllerFront, controllerBack;
   late AnimationController _animationController;
   late Animation _animation;
   AnimationStatus _animationStatus = AnimationStatus.dismissed;
@@ -42,15 +39,23 @@ class _AlbumViewState extends State<AlbumView> with TickerProviderStateMixin {
     _getAlbumData();
 
     controllerFront = AnimationController(vsync: this, duration: const Duration(seconds: 1));
-    Tween tween = Tween(begin: dimensions.heightHalf - dimensions.heightHalf/2, end: dimensions.heightHalf);
-    animation = tween.animate(controllerFront);
-    animation.addListener(() {
+    Tween tweenFront = Tween(begin: dimensions.heightHalf - dimensions.heightHalf/2, end: dimensions.heightHalf);
+    animationFront = tweenFront.animate(controllerFront);
+    animationFront.addListener(() {
+      setState(() {
+      });
+    });
+
+    controllerBack = AnimationController(vsync: this, duration: const Duration(seconds: 1));
+    Tween tweenBack = Tween(begin: dimensions.heightHalf - dimensions.heightHalf/2, end: 0.0);
+    animationBack = tweenBack.animate(controllerBack);
+    animationBack.addListener(() {
       setState(() {
       });
     });
 
     _animationController =
-        AnimationController(vsync: this, duration: Duration(seconds: 2));
+        AnimationController(vsync: this, duration: const Duration(seconds: 2));
     _animation = Tween(end: 1.0, begin: 0.0).animate(_animationController)
       ..addListener(() {
         setState(() {});
@@ -83,7 +88,17 @@ class _AlbumViewState extends State<AlbumView> with TickerProviderStateMixin {
 
     return Scaffold(
       backgroundColor: ColorList.colorGrey,
-      body: buildCover(),
+      body: buildAlbum(),
+    );
+  }
+
+  buildAlbum() {
+    return Stack(
+      children: [
+        buildCover(),
+        buildBack(),
+        buildViewer(),
+      ],
     );
   }
 
@@ -105,7 +120,7 @@ class _AlbumViewState extends State<AlbumView> with TickerProviderStateMixin {
       child: Stack(
           alignment: Alignment.center,
           children: [
-            Stack(
+            /*Stack(
               alignment: Alignment.center,
               children: [
                 Align(
@@ -191,44 +206,36 @@ class _AlbumViewState extends State<AlbumView> with TickerProviderStateMixin {
                   ),
                 )
               ],
-            ),
+            ),*/
             Positioned(
               width: dimensions.heightHalf,
-              height: dimensions.heightOneThird,
-              left: animation.value,
-              top: (dimensions.height - dimensions.heightOneThird)/2,
+              //height: dimensions.heightOneThird,
+              left: animationFront.value,
+              //top: (dimensions.height - dimensions.heightOneThird)/2,
               child: Center(
-                child: Container(
-                  alignment: Alignment.center,
-                  width: dimensions.heightHalf,
-                  height: dimensions.heightOneThird,
-                  decoration: BoxDecoration(
-                    color: ColorList.colorPrimary,
-                    image: DecorationImage(
-                      image: CachedNetworkImageProvider(widget.bannerImage),
-                      fit: BoxFit.scaleDown,
-                    ),
-                  ),
-                  child: isLoading
-                      ? Align(
-                          alignment: Alignment.bottomCenter,
-                          child: Padding(
-                            padding: EdgeInsets.only(bottom: dimensions.px20),
-                            child: const CircularProgressIndicator(
-                              color: ColorList.colorBlue,
-                            ),
-                          ),
-                        )
-                      : Container(),
-                ),
+                child: CachedNetworkImage(
+                imageUrl: widget.bannerImage,
+                width: dimensions.heightHalf,
+                fit: BoxFit.cover,
+              ),
               ),
             ),
           ]),
     );
+    /*Container(
+      color: ColorList.colorPrimary,
+      child: Center(
+        child: CachedNetworkImage(
+          imageUrl: widget.bannerImage,
+          width: dimensions.heightHalf,
+          fit: BoxFit.cover,
+        ),
+      ),
+    );*/
   }
 
   buildViewer() {
-    return Stack(
+    return const Stack(
       children: [
         /*PhotoViewGallery.builder(
           scrollPhysics: const BouncingScrollPhysics(),
@@ -270,6 +277,138 @@ class _AlbumViewState extends State<AlbumView> with TickerProviderStateMixin {
         ),*/
       ],
     );
+  }
+
+  buildBack() {
+    return GestureDetector(
+      onHorizontalDragEnd: (details) {
+        if (details.primaryVelocity! > 0) {
+          // User swiped Left
+          //_animationController.reverse();
+          controllerBack.reverse();
+          debugPrint('Swiped Right');
+        } else if (details.primaryVelocity! < 0) {
+          // User swiped Right
+          //_animationController.forward();
+          controllerBack.forward();
+          debugPrint('Swiped Left');
+        }
+      },
+      child: Stack(
+          alignment: Alignment.center,
+          children: [
+            /*Stack(
+              alignment: Alignment.center,
+              children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Container(
+                    color: Colors.blueAccent,
+                    width: dimensions.heightHalf,
+                    height: dimensions.heightOneThird,
+                    margin: EdgeInsets.only(left: dimensions.px15),
+                    child: CachedNetworkImage(
+                      imageUrl: '${Strings.urlMain}/public/album/5399d1/58265.png',
+                      fit: BoxFit.fitHeight,
+                      alignment: Alignment.centerLeft,
+                    ),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Container(
+                    color: Colors.red.withOpacity(0.5),
+                    width: dimensions.heightHalf - dimensions.px15,
+                    height: dimensions.heightOneThird,
+                    margin: EdgeInsets.only(right: dimensions.px15),
+                    child: CachedNetworkImage(
+                      imageUrl: '${Strings.urlMain}/public/album/5399d1/98904.png',
+                      fit: BoxFit.fitHeight,
+                      alignment: Alignment.centerRight,
+                    ),
+                  ),
+                ),
+                Container(
+                  alignment: Alignment.center,
+                  width: dimensions.width,
+                  height: dimensions.heightOneThird,
+                  margin: EdgeInsets.symmetric(horizontal: dimensions.px5),
+                  //color: Colors.amber.withOpacity(0.25),
+                  child: Transform(
+                    alignment: FractionalOffset.center,
+                    transform: Matrix4.identity()
+                      ..setEntry(3, 2, 0.0015)
+                      ..rotateY(pi * _animation.value),
+                    child: GestureDetector(
+                      /*onTap: () {
+                      if (_animationStatus == AnimationStatus.dismissed) {
+                        _animationController.forward();
+                      } else {
+                        _animationController.reverse();
+                      }
+                    },*/
+                      child: _animation.value <= 0.5
+                          ? Align(
+                        alignment: Alignment.centerRight,
+                        child: Container(
+                          color: Colors.blueAccent,
+                          width: dimensions.heightHalf,
+                          height: dimensions.heightOneThird,
+                          child: CachedNetworkImage(
+                            imageUrl: '${Strings.urlMain}/public/album/5399d1/58265.png',
+                            fit: BoxFit.fitHeight,
+                            alignment: Alignment.centerRight,
+                          ),
+                        ),
+                      )
+                          :
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: Container(
+                            color: Colors.red.withOpacity(0.5),
+                            width: dimensions.heightHalf + dimensions.px5,
+                            height: dimensions.heightOneThird,
+                            child: Transform(
+                              alignment: Alignment.center,
+                              transform: Matrix4.rotationY(pi),
+                              child: CachedNetworkImage(
+                                imageUrl: '${Strings.urlMain}/public/album/5399d1/98904.png',
+                                fit: BoxFit.fitHeight,
+                                alignment: Alignment.centerLeft,
+                              ),
+                            )
+                        ),
+                      ),
+                    ),
+                  ),
+                )
+              ],
+            ),*/
+            Positioned(
+              width: dimensions.heightHalf,
+              //height: dimensions.heightOneThird,
+              left: animationBack.value,
+              //top: (dimensions.height - dimensions.heightOneThird)/2,
+              child: Center(
+                child: CachedNetworkImage(
+                  imageUrl: albumData.isEmpty ? widget.bannerImage : '${Strings.urlMain}/${albumData[albumData.length - 1]['images']}',
+                  width: dimensions.heightHalf,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+          ]),
+    );
+    /*return Container(
+      color: ColorList.colorPrimary,
+      child: Center(
+        child: CachedNetworkImage(
+          imageUrl: albumData.isEmpty ? widget.bannerImage : '${Strings.urlMain}/${albumData[albumData.length - 1]['images']}',
+          width: dimensions.heightHalf,
+          fit: BoxFit.cover,
+        ),
+      ),
+    );*/
   }
 
   _getAlbumData(){

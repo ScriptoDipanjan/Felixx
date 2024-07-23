@@ -2,10 +2,8 @@ import 'dart:async';
 
 import 'package:felixx/api/api_calls.dart';
 import 'package:felixx/utils/methods.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:package_info_plus/package_info_plus.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+//import 'package:package_info_plus/package_info_plus.dart';
 
 import '../constants/colors.dart';
 import '../constants/dimens.dart' as dimensions;
@@ -14,7 +12,7 @@ import '../utils/routes.dart';
 import '../widgets/stateless_widgets.dart';
 
 class Splash extends StatefulWidget {
-  const Splash({Key? key}) : super(key: key);
+  const Splash({super.key});
 
   @override
   State<Splash> createState() => _SplashState();
@@ -22,13 +20,13 @@ class Splash extends StatefulWidget {
 
 class _SplashState extends State<Splash> {
 
-  PackageInfo _packageInfo = PackageInfo(
+  /*PackageInfo _packageInfo = PackageInfo(
     appName: Strings.stringUnknown,
     packageName: Strings.stringUnknown,
     version: Strings.stringUnknown,
     buildNumber: Strings.stringUnknown,
     buildSignature: Strings.stringUnknown,
-  );
+  );*/
 
   @override
   void initState() {
@@ -38,10 +36,10 @@ class _SplashState extends State<Splash> {
   }
 
   _initPackageInfo() async {
-    final PackageInfo info = await PackageInfo.fromPlatform();
+    /*final PackageInfo info = await PackageInfo.fromPlatform();
     setState(() {
       _packageInfo = info;
-    });
+    });*/
 
     ApiCalls.checkToken().then((status) => _startSplashScreenTimer());
   }
@@ -101,6 +99,7 @@ class _SplashState extends State<Splash> {
   }
 
   _getVersion() {
-    return '${Strings.stringVersion}${_packageInfo.version}';
+    return Strings.stringVersion;
+    //return '${Strings.stringVersion}${_packageInfo.version}';
   }
 }

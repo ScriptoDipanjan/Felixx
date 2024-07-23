@@ -19,7 +19,7 @@ import '../utils/routes.dart';
 import '../widgets/stateless_widgets.dart';
 
 class Home extends StatefulWidget {
-  const Home({Key? key}) : super(key: key);
+  const Home({super.key});
 
   @override
   State<Home> createState() => _HomeState();
@@ -27,6 +27,7 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   DateTime currentBackPressTime = DateTime.now();
+  late SharedPreferences pref;
   bool isLoading = true, isError = false;
   String? userName = Strings.stringUser;
   List data = [];
@@ -55,6 +56,7 @@ class _HomeState extends State<Home> {
               Strings.stringWelcome,
               style: TextStyle(
                 fontSize: dimensions.px12,
+                color: ColorList.colorAccent,
               ),
             ),
             SizedBox(height: dimensions.px2),
@@ -63,6 +65,7 @@ class _HomeState extends State<Home> {
               style: TextStyle(
                 fontSize: dimensions.px17,
                 fontWeight: FontWeight.w600,
+                color: ColorList.colorAccent,
               ),
             ),
             SizedBox(height: dimensions.px5),
@@ -82,9 +85,16 @@ class _HomeState extends State<Home> {
         onWillPop: onWillPop,
         child: GestureDetector(
           onTap: () => isDialOpen.value = false,
-          child: isLoading
-              ? StatelessWidgets.getLoadingScreen(dimensions.height)
-              : data.isEmpty ? StatelessWidgets.getEmptyResult(isError, _prepareDashboardData) : _buildListView(),
+          child: Stack(
+            children: [
+              isLoading
+                  ? StatelessWidgets.getLoadingScreen(dimensions.height)
+                  : Container(),
+              data.isEmpty && !isLoading
+                  ? StatelessWidgets.getEmptyResult(isError, _prepareDashboardData)
+                  : _buildListView()
+            ],
+          ),
         )
       ),
       floatingActionButton: SpeedDial(
@@ -129,7 +139,7 @@ class _HomeState extends State<Home> {
   }
 
   _getUserDetails() async {
-    SharedPreferences pref = await SharedPreferences.getInstance();
+    pref = await SharedPreferences.getInstance();
     setState(() {
       userName = pref.getString('user_full_name');
     });
@@ -140,6 +150,7 @@ class _HomeState extends State<Home> {
       setState(() {
         isLoading = true;
         isError = false;
+        data.clear();
       });
     }
 
@@ -483,7 +494,7 @@ class _HomeState extends State<Home> {
   _buildImageColumn(index) {
     return GestureDetector(
       onTap: () async {
-        Routes.navigateToAlbumView(data[index]['image_url'] + data[index]['banner'], data[index]['id']);
+        _getAlbumData(data[index]['image_url'] + data[index]['banner'], data[index]['id']);
       },
       child: Container(
         height: dimensions.heightAlbumChild,
@@ -512,7 +523,7 @@ class _HomeState extends State<Home> {
                 borderRadius: BorderRadius.circular(dimensions.px15),
                 image: DecorationImage(
                   image: CachedNetworkImageProvider(data[index]['image_url'] + data[index]['banner'],),
-                  fit: BoxFit.fitHeight,
+                  fit: BoxFit.cover,
                 ),
               ),
               child: Container(
@@ -831,6 +842,32 @@ class _HomeState extends State<Home> {
               ),
             ),
     );
+  }
+
+  _getAlbumData(bannerImage, albumID){
+
+    //debugPrint("albumID: $albumID ${json.decode(json.encode(pref.getString(albumID)!)) as String}");
+    
+    /*if(pref.getString(albumID) == null){
+
+    } else {
+      var data = json.decode(json.encode(pref.getString(albumID)!));
+      Routes.navigateToAlbumCover(data);
+    }*/
+    setState(() {
+      isLoading = true;
+    });
+
+    ApiCalls.getAlbumDetails(albumID)
+        .then((data){
+      setState(() {
+        isLoading = false;
+      });
+
+      if(data != ''){
+        Routes.navigateToAlbumCover(data.toList());
+      }
+    });
   }
 
   _showLogoutDialog() {

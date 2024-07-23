@@ -10,7 +10,7 @@ import '../widgets/stateless_widgets.dart';
 
 class Authentication extends StatefulWidget {
 
-  const Authentication({Key? key}) : super(key: key);
+  const Authentication({super.key});
 
   @override
   State<Authentication> createState() => _AuthenticationState();

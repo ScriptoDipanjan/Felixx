@@ -275,6 +275,7 @@ class ApiCalls {
       if (response.statusCode == 201) {
         var responseDetails = json.decode(await response.stream.bytesToString());
         debugPrint(responseDetails['albumImages'].toString());
+        Methods.saveAlbumData(responseDetails['albumImages'].toString(), albumID);
         return responseDetails['albumImages'];
 
       } else {
@@ -283,6 +284,7 @@ class ApiCalls {
       }
     } on Exception catch(e) {
       Methods.callException(e);
+      return '';
     }
   }
 

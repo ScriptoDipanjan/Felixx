@@ -2,6 +2,8 @@ library globals;
 
 double height = 0.0;
 double width = 0.0;
+final ratio = width / height;
+final animationTransitionPoint = ratio < 9 / 16 ? 0.5 : 0.05;
 
 double px1 = width * 0.003;
 double px2 = width * 0.006;

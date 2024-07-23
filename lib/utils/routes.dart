@@ -1,13 +1,19 @@
+import 'package:felixx/activity/example.dart';
+import 'package:felixx/constants/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:turn_page_transition/turn_page_transition.dart';
 
-import '../activity/album_view.dart';
+import '../activity/album_cover.dart';
+import '../activity/album_body.dart';
+import '../activity/album_back.dart';
 import '../activity/authentication.dart';
-import '../activity/example.dart';
 import '../activity/home.dart';
 import '../activity/otp_verification.dart';
 import '../activity/splash.dart';
+
+import 'package:felixx/constants/dimens.dart' as dimensions;
 
 class Routes {
 
@@ -53,8 +59,35 @@ class Routes {
     Get.to(() => OTPVerification(country, phone, name, email));
   }
 
-  static navigateToAlbumView(bannerImage, albumID) {
-    //Get.to(() => MyHomePage(title: albumID));
-    Get.to(() => AlbumView(bannerImage, albumID));
+  static navigateToAlbumCover(albumData) {
+    //Get.to(() => AlbumCover(bannerImage, albumData));
+    Get.to(() => CustomWidget(albumData));
   }
+
+  static navigateToAlbumBody(context, bannerImage, albumData) {
+    debugPrint('ratio: ${dimensions.ratio}');
+    debugPrint('animationTransitionPoint: ${dimensions.animationTransitionPoint}');
+    //Get.to(() => const MyHomePage(title: '',));
+    //Get.to(() => CustomWidget());
+    /*Navigator.of(context).push(
+        TurnPageRoute(
+          overleafColor: ColorList.colorGrey,
+          animationTransitionPoint: dimensions.animationTransitionPoint,
+          transitionDuration: const Duration(milliseconds: 300),
+          builder: (context) => AlbumBody(bannerImage, albumData),
+        )
+    );*/
+  }
+
+  static navigateToAlbumBack(context, bannerImage, albumData) {
+    Navigator.of(context).push(
+        TurnPageRoute(
+          overleafColor: ColorList.colorGrey,
+          animationTransitionPoint: dimensions.animationTransitionPoint,
+          transitionDuration: const Duration(milliseconds: 300),
+          builder: (context) => AlbumBack(bannerImage, albumData),
+        )
+    );
+  }
+
 }

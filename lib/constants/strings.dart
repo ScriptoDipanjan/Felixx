@@ -3,7 +3,7 @@ class Strings {
   static const String stringAppName = 'Felixx';
   static const String patternEmail = r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
   static const String stringUnknown = 'Unknown';
-  static String stringVersion = 'Version: ';
+  static String stringVersion = 'Version: 1.0.0 (1)';
 
   static String stringContinueEmail = 'Continue with Email';
   static String stringContinueEmailHeader = 'Please Enter the Gate Pass below';

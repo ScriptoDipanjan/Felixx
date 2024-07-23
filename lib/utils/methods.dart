@@ -1,6 +1,4 @@
-import 'dart:async';
 import 'dart:io';
-import 'dart:ui';
 
 import '../constants/dimens.dart' as dimensions;
 import '../constants/colors.dart';
@@ -182,6 +180,14 @@ class Methods {
             return Container();
           });*/
     }
+  }
+
+  static saveAlbumData(responseData, albumID) async {
+    debugPrint(responseData.toString());
+
+    SharedPreferences pref = await SharedPreferences.getInstance();
+
+    pref.setString(albumID, responseData);
   }
 
   static getURL(data){

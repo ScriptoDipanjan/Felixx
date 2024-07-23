@@ -18,7 +18,7 @@ String countryCode = '+91', phoneNumber = '';
 
 class OTPVerification extends StatefulWidget {
   final String code, phone, name, email;
-  const OTPVerification(this.code, this.phone, this.name, this.email, {Key? key}) : super(key: key);
+  const OTPVerification(this.code, this.phone, this.name, this.email, {super.key});
 
   @override
   OTPVerificationState createState() => OTPVerificationState();
@@ -111,7 +111,7 @@ class OTPVerificationState extends State<OTPVerification> {
                     Text(
                       Strings.stringOTPVerificationHeader,
                       style: TextStyle(
-                        color: ColorList.colorPrimary,
+                        color: ColorList.colorAccent,
                         fontSize: dimensions.px25,
                         fontWeight: FontWeight.w600,
                       ),
@@ -125,14 +125,14 @@ class OTPVerificationState extends State<OTPVerification> {
                             TextSpan(
                                 text: phoneNumber,
                                 style: TextStyle(
-                                  color: ColorList.colorPrimary,
+                                  color: ColorList.colorAccent,
                                   fontWeight: FontWeight.bold,
                                   fontSize: dimensions.px15,
                                 )
                             ),
                           ],
                           style: TextStyle(
-                            color: ColorList.colorPrimary,
+                            color: ColorList.colorAccent,
                             fontSize: dimensions.px15,
                           )
                       ),
@@ -239,7 +239,7 @@ class OTPVerificationState extends State<OTPVerification> {
                         Text(
                           Strings.stringOTPVerificationNoOTP,
                           style: TextStyle(
-                            color: ColorList.colorPrimary,
+                            color: ColorList.colorAccent,
                             fontSize: dimensions.px15,
                           ),
                         ),
