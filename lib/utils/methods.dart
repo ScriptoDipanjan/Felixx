@@ -1,12 +1,13 @@
 import 'dart:io';
 
+import 'package:get/get.dart';
+
 import '../constants/dimens.dart' as dimensions;
 import '../constants/colors.dart';
 import '../utils/routes.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Methods {
@@ -50,22 +51,34 @@ class Methods {
   }
 
   static showError(msg) {
-    Fluttertoast.showToast(
-      msg: msg,
-      toastLength: Toast.LENGTH_LONG,
-      timeInSecForIosWeb: 2,
-      backgroundColor: ColorList.colorPrimary,
-      textColor: ColorList.colorAccent,
+    Get.snackbar(
+      'Alert!',
+      msg,
+      isDismissible: false,
+      duration: const Duration(milliseconds: 4000),
+      colorText: ColorList.colorOrange,
+      backgroundColor: ColorList.colorGrey,
+      snackPosition: SnackPosition.BOTTOM,
+      margin: EdgeInsets.zero,
+      borderRadius: 0,
+      forwardAnimationCurve: Curves.fastLinearToSlowEaseIn,
+      reverseAnimationCurve: Curves.easeOut,
     );
   }
 
   static showToast(msg) {
-    Fluttertoast.showToast(
-      msg: msg,
-      toastLength: Toast.LENGTH_SHORT,
-      timeInSecForIosWeb: 1,
-      backgroundColor: ColorList.colorPrimary,
-      textColor: ColorList.colorAccent,
+    Get.snackbar(
+      'Message!',
+      msg,
+      isDismissible: false,
+      duration: const Duration(milliseconds: 2000),
+      colorText: ColorList.colorBlue,
+      backgroundColor: ColorList.colorGrey,
+      snackPosition: SnackPosition.BOTTOM,
+      margin: EdgeInsets.zero,
+      borderRadius: 0,
+      forwardAnimationCurve: Curves.fastLinearToSlowEaseIn,
+      reverseAnimationCurve: Curves.easeOut,
     );
   }
 
@@ -183,10 +196,7 @@ class Methods {
   }
 
   static saveAlbumData(responseData, albumID) async {
-    debugPrint(responseData.toString());
-
     SharedPreferences pref = await SharedPreferences.getInstance();
-
     pref.setString(albumID, responseData);
   }
 

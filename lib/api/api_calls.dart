@@ -74,7 +74,8 @@ class ApiCalls {
         var responseLogout = json.decode(await response.stream.bytesToString());
         Methods.showToast(responseLogout['messages']);
 
-        pref.setBool('isLoggedIn', false);
+        //pref.setBool('isLoggedIn', false);
+        pref.clear();
 
         Routes.navigateToSplash();
 
@@ -193,6 +194,7 @@ class ApiCalls {
       if (response.statusCode == 201) {
         var responseAdd = json.decode(await response.stream.bytesToString());
         Methods.showToast(responseAdd['messages']);
+        pref.remove(albumID);
         return true;
 
       } else {
@@ -248,7 +250,7 @@ class ApiCalls {
     }
   }
 
-  static getAlbumDetails(albumID) async {
+  static getAlbumDetails(albumID, id) async {
 
     if(!await Methods.checkConnection()){
       return false;
@@ -258,11 +260,12 @@ class ApiCalls {
 
     try {
       var headers = {
+        'Accept': 'application/json',
         'Authorization': 'Bearer ${pref.getString('token')}'
       };
       var request = http.MultipartRequest('POST', Uri.parse(Strings.urlAlbumDetails));
       request.fields.addAll({
-        'album_id': albumID
+        'album_id': id
       });
 
       request.headers.addAll(headers);
@@ -274,8 +277,8 @@ class ApiCalls {
 
       if (response.statusCode == 201) {
         var responseDetails = json.decode(await response.stream.bytesToString());
-        debugPrint(responseDetails['albumImages'].toString());
-        Methods.saveAlbumData(responseDetails['albumImages'].toString(), albumID);
+        debugPrint(json.encode(responseDetails['albumImages']).toString());
+        Methods.saveAlbumData(json.encode(responseDetails['albumImages']).toString(), albumID);
         return responseDetails['albumImages'];
 
       } else {

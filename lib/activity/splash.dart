@@ -41,7 +41,11 @@ class _SplashState extends State<Splash> {
       _packageInfo = info;
     });*/
 
-    ApiCalls.checkToken().then((status) => _startSplashScreenTimer());
+    if(await Methods.checkConnection()) {
+      ApiCalls.checkToken().then((status) => _startSplashScreenTimer());
+    } else {
+      _startSplashScreenTimer();
+    }
   }
 
   @override

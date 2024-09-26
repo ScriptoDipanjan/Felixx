@@ -34,18 +34,15 @@ dependencies:
 
   cupertino_icons: ^1.0.2
 
-  #package_info_plus: ^5.0.1
   shared_preferences: ^2.0.8
-  fluttertoast: ^8.0.9
   get: ^4.6.1
   http: ^1.2.1
 
   country_code_picker: ^3.0.0
-  firebase_core: ^2.1.1
-  firebase_messaging: ^14.6.3
-  firebase_auth: ^4.2.5
+  firebase_core: ^3.5.0
+  firebase_messaging: ^15.1.2
+  firebase_auth: ^5.3.0
   google_sign_in: ^6.1.4
-  #flutter_facebook_auth: ^6.0.0
 
   pin_code_fields: ^8.0.1
 
@@ -54,22 +51,14 @@ dependencies:
   scanning_effect: ^1.0.4
   url_launcher: ^6.1.12
 
-  photo_view: ^0.15.0
   cached_network_image: ^3.2.3
-
-  turn_page_transition: ^0.3.0
-  better_page_turn: ^0.0.6
-  page_flip: ^0.2.3
-  flip_widget: ^0.1.11
-
-  webview_flutter: ^4.4.2
-  #bookfx: ^0.0.2
+  webview_flutter: ^4.9.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  flutter_launcher_icons: ^0.13.1
+  flutter_launcher_icons: ^0.14.1
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

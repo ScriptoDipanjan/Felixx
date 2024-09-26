@@ -143,6 +143,7 @@ class _HomeState extends State<Home> {
     setState(() {
       userName = pref.getString('user_full_name');
     });
+    _prepareDashboardData();
   }
 
   Future<void> _prepareDashboardData() async {
@@ -154,7 +155,14 @@ class _HomeState extends State<Home> {
       });
     }
 
-    _getDashboardData();
+    String response = pref.getString('album_list') ?? '';
+
+    if(response.isNotEmpty) {
+      data = json.decode(response)['albums'];
+      setState(() => isLoading = false);
+    } else {
+      _getDashboardData();
+    }
   }
 
   _getDashboardData() {
@@ -163,6 +171,7 @@ class _HomeState extends State<Home> {
       setState(() {
         if(response != '')  {
           data = json.decode(response)['albums'];
+          pref.setString('album_list', response);
         } else {
           isError = true;
           debugPrint("isError: $isError");
@@ -291,15 +300,19 @@ class _HomeState extends State<Home> {
                                   color: ColorList.colorBlue,
                                 ),
                                 child: TextButton(
-                                  onPressed: () {
+                                  onPressed: () async {
                                     if(controllerID.text.isNotEmpty){
-                                      setModalState(() => statEnabled = false);
                                       SystemChannels.textInput.invokeMethod('TextInput.hide');
-                                      ApiCalls.albumAdd(controllerID.text)
-                                          .then((status){
+                                      if(await Methods.checkConnection()) {
+                                        setModalState(() => statEnabled = false);
+                                        ApiCalls.albumAdd(controllerID.text)
+                                            .then((status){
                                         Routes.navigateToLastPage();
-                                        _prepareDashboardData();
-                                      });
+                                        _refreshDashboardData();
+                                        });
+                                      } else {
+                                        Methods.showError(Strings.stringOffline);
+                                      }
                                     } else {
                                       Methods.showError(Strings.stringErrorAlbumID);
                                       SystemChannels.textInput.invokeMethod('TextInput.show');
@@ -308,23 +321,23 @@ class _HomeState extends State<Home> {
                                   },
                                   child: !statEnabled
                                       ? SizedBox(
-                                    height: dimensions.px12,
-                                    width: dimensions.px12,
-                                    child: Center(
-                                      child: CircularProgressIndicator(
-                                        color: ColorList.colorAccent,
-                                        strokeWidth: dimensions.px2,
-                                      ),
-                                    ),
-                                  )
+                                        height: dimensions.px12,
+                                        width: dimensions.px12,
+                                        child: Center(
+                                          child: CircularProgressIndicator(
+                                            color: ColorList.colorAccent,
+                                            strokeWidth: dimensions.px2,
+                                          ),
+                                        ),
+                                      )
                                       : Text(
-                                    Strings.stringAddAlbum,
-                                    style: TextStyle(
-                                      color: ColorList.colorAccent,
-                                      fontSize: dimensions.px15,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                                        Strings.stringAddAlbum,
+                                        style: TextStyle(
+                                          color: ColorList.colorAccent,
+                                          fontSize: dimensions.px15,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
                                 ),
                               ),
                             ],
@@ -394,19 +407,23 @@ class _HomeState extends State<Home> {
                               scanningLinePadding: EdgeInsets.all(dimensions.px20),
                               child: MobileScanner(
                                 controller: controller,
-                                onDetect: (capture) {
+                                onDetect: (capture) async {
                                   final List<Barcode> barcodes = capture.barcodes;
                                   for (final barcode in barcodes) {
                                     if(statEnabled) {
                                       debugPrint('Barcode found! ${barcode.rawValue}');
-                                      ApiCalls.albumAdd(barcode.rawValue)
-                                        .then((status) {
-                                          controller.dispose();
-                                          Routes.navigateToLastPage();
-                                          _prepareDashboardData();
-                                        }
-                                      );
-                                      setModalState(() => statEnabled = false);
+                                      if(await Methods.checkConnection()) {
+                                        ApiCalls.albumAdd(barcode.rawValue)
+                                            .then((status) {
+                                            controller.dispose();
+                                            Routes.navigateToLastPage();
+                                            _refreshDashboardData();
+                                          }
+                                        );
+                                        setModalState(() => statEnabled = false);
+                                      } else {
+                                        Methods.showError(Strings.stringOffline);
+                                      }
                                     }
                                   }
                                 },
@@ -479,7 +496,7 @@ class _HomeState extends State<Home> {
 
   _buildListView() {
     return RefreshIndicator(
-      onRefresh: () => _prepareDashboardData(),
+      onRefresh: () => _refreshDashboardData(),
       child: ListView.builder(
         physics: const BouncingScrollPhysics(),
         padding: EdgeInsets.all(dimensions.px15),
@@ -491,10 +508,15 @@ class _HomeState extends State<Home> {
     );
   }
 
+  _refreshDashboardData() {
+    pref.remove('album_list');
+    _prepareDashboardData();
+  }
+
   _buildImageColumn(index) {
     return GestureDetector(
       onTap: () async {
-        _getAlbumData(data[index]['image_url'] + data[index]['banner'], data[index]['id']);
+        _getAlbumData(data[index]['album_id'], data[index]['id']);
       },
       child: Container(
         height: dimensions.heightAlbumChild,
@@ -781,35 +803,40 @@ class _HomeState extends State<Home> {
   }
 
   _shareAlbum(type, albumID, albumName, url) async {
-    if(type == 0){
-      String text = Uri.encodeComponent('${Strings.stringShareAlbumHeader}*$albumID*${Strings.stringShareAlbumURL} $url');
+    if(await Methods.checkConnection()) {
+      if(type == 0){
+        String text = Uri.encodeComponent('${Strings.stringShareAlbumHeader}*$albumID*${Strings.stringShareAlbumURL} $url');
 
-      String appUrl = "https://wa.me/?text=$text";
-      Uri whatsapp = Uri.parse(appUrl);
+        String appUrl = "https://wa.me/?text=$text";
+        Uri whatsapp = Uri.parse(appUrl);
 
-      await launchUrl(
-        whatsapp,
-        mode: LaunchMode.externalNonBrowserApplication,
-      );
+        await launchUrl(
+          whatsapp,
+          mode: LaunchMode.externalNonBrowserApplication,
+        );
 
-    } else if(type == 1){
+      } else if(type == 1){
 
-      String email = Uri.encodeComponent("");
-      String subject = Uri.encodeComponent('${Strings.stringShareAlbum}: $albumName');
-      String body = Uri.encodeComponent('${Strings.stringShareAlbumHeader}"$albumID"${Strings.stringShareAlbumURL} $url');
+        String email = Uri.encodeComponent("");
+        String subject = Uri.encodeComponent('${Strings.stringShareAlbum}: $albumName');
+        String body = Uri.encodeComponent('${Strings.stringShareAlbumHeader}"$albumID"${Strings.stringShareAlbumURL} $url');
 
-      String appUrl = "mailto:$email?subject=$subject&body=$body";
-      Uri mail = Uri.parse(appUrl);
+        String appUrl = "mailto:$email?subject=$subject&body=$body";
+        Uri mail = Uri.parse(appUrl);
 
-      await launchUrl(
-        mail,
-        mode: LaunchMode.externalNonBrowserApplication,
-      );
+        await launchUrl(
+          mail,
+          mode: LaunchMode.externalNonBrowserApplication,
+        );
+      }
+    } else {
+      Methods.showError(Strings.stringOffline);
     }
   }
 
-  _removeAlbumDialog(albumID) {
-    showCupertinoModalPopup<void>(
+  _removeAlbumDialog(albumID) async {
+    if(await Methods.checkConnection()) {
+      showCupertinoModalPopup<void>(
         context: context,
         builder: (BuildContext context) =>
             Theme(
@@ -834,75 +861,81 @@ class _HomeState extends State<Home> {
                       setState(() {
                         isLoading = true;
                       });
-                      ApiCalls.albumRemove(albumID).then((value) => _getDashboardData());
+                      ApiCalls.albumRemove(albumID).then((value) => _refreshDashboardData());
                     },
                     child: Text(Strings.stringYes),
                   ),
                 ],
               ),
             ),
-    );
-  }
-
-  _getAlbumData(bannerImage, albumID){
-
-    //debugPrint("albumID: $albumID ${json.decode(json.encode(pref.getString(albumID)!)) as String}");
-    
-    /*if(pref.getString(albumID) == null){
-
+      );
     } else {
-      var data = json.decode(json.encode(pref.getString(albumID)!));
-      Routes.navigateToAlbumCover(data);
-    }*/
-    setState(() {
-      isLoading = true;
-    });
-
-    ApiCalls.getAlbumDetails(albumID)
-        .then((data){
-      setState(() {
-        isLoading = false;
-      });
-
-      if(data != ''){
-        Routes.navigateToAlbumCover(data.toList());
-      }
-    });
+      Methods.showError(Strings.stringOffline);
+    }
   }
 
-  _showLogoutDialog() {
-    showCupertinoModalPopup<void>(
-      context: context,
-      builder: (BuildContext context) =>
-          Theme(
-            data: ThemeData.dark(),
-            child: CupertinoAlertDialog(
-              insetAnimationDuration: const Duration(seconds: 5),
-              insetAnimationCurve: Curves.easeOut,
-              title: Text(Strings.stringLogout),
-              content: Text(Strings.stringAreYouSure),
-              actions: <CupertinoDialogAction>[
-                CupertinoDialogAction(
-                  isDefaultAction: true,
-                  onPressed: () {
-                    Routes.navigateToLastPage();
-                  },
-                  child: Text(Strings.stringNo),
-                ),
-                CupertinoDialogAction(
-                  isDestructiveAction: true,
-                  onPressed: () {
-                    Routes.navigateToLastPage();
-                    setState(() {
-                      isLoading = true;
-                    });
-                    ApiCalls.callLogout();
-                  },
-                  child: Text(Strings.stringYes),
-                ),
-              ],
+  _getAlbumData(albumID, id) async {
+    if(pref.getString(albumID) == null){
+      if(await Methods.checkConnection()) {
+        setState(() {
+          isLoading = true;
+        });
+        ApiCalls.getAlbumDetails(albumID, id)
+            .then((data){
+          setState(() {
+            isLoading = false;
+          });
+
+          if(data != ''){
+            Routes.navigateToAlbumView(data.toList());
+          }
+        });
+      } else {
+        Methods.showError(Strings.stringOfflineDownload);
+      }
+    } else {
+      final List<dynamic> data = await jsonDecode(pref.getString(albumID)!);
+      Routes.navigateToAlbumView(data.toList());
+    }
+  }
+
+  _showLogoutDialog() async {
+    if(await Methods.checkConnection()) {
+      showCupertinoModalPopup<void>(
+        context: context,
+        builder: (BuildContext context) =>
+            Theme(
+              data: ThemeData.dark(),
+              child: CupertinoAlertDialog(
+                insetAnimationDuration: const Duration(seconds: 5),
+                insetAnimationCurve: Curves.easeOut,
+                title: Text(Strings.stringLogout),
+                content: Text(Strings.stringAreYouSure),
+                actions: <CupertinoDialogAction>[
+                  CupertinoDialogAction(
+                    isDefaultAction: true,
+                    onPressed: () {
+                      Routes.navigateToLastPage();
+                    },
+                    child: Text(Strings.stringNo),
+                  ),
+                  CupertinoDialogAction(
+                    isDestructiveAction: true,
+                    onPressed: () {
+                      Routes.navigateToLastPage();
+                      setState(() {
+                        isLoading = true;
+                      });
+                      ApiCalls.callLogout();
+                    },
+                    child: Text(Strings.stringYes),
+                  ),
+                ],
+              ),
             ),
-          ),
-    );
+      );
+    } else {
+      Methods.showError(Strings.stringOffline);
+    }
   }
 }

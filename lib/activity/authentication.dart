@@ -47,8 +47,12 @@ class _AuthenticationState extends State<Authentication> {
                       color: ColorList.colorAccent,
                     ),
                     child: TextButton(
-                      onPressed: () {
-                        Login.showLoginDialog(context);
+                      onPressed: () async {
+                        if(await Methods.checkConnection()) {
+                          Login.showLoginDialog(context);
+                        } else {
+                          Methods.showError(Strings.stringOffline);
+                        }
                       },
                       child: Padding(
                         padding: EdgeInsets.fromLTRB(dimensions.px20, 0, dimensions.px10, 0),
@@ -80,10 +84,14 @@ class _AuthenticationState extends State<Authentication> {
                       color: ColorList.colorAccent,
                     ),
                     child: TextButton(
-                      onPressed: () {
-                        setState(() => isLoading = true);
-                        FirebaseAuthentication.loginGoogle(context, fcmToken)
-                            .then((value) => setState(() => isLoading = false));
+                      onPressed: () async {
+                        if(await Methods.checkConnection()) {
+                          setState(() => isLoading = true);
+                          FirebaseAuthentication.loginGoogle(context, fcmToken)
+                              .then((value) => setState(() => isLoading = false));
+                        } else {
+                          Methods.showError(Strings.stringOffline);
+                        }
                       },
                       child: Padding(
                         padding: EdgeInsets.fromLTRB(dimensions.px20, 0, dimensions.px17, 0),
